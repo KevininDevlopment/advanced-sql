@@ -1,0 +1,2 @@
+Various SQL commands that include the creation of triggers, functions, views, altering the databases, and more. There is also an html document that 
+has PHP to connect and display SQL database information.

@@ -1,0 +1,71 @@
+Product Description View:
+
+CREATE VIEW [dbo].[Amaya_vProductLinesUSA]
+	AS SELECT
+	ProductDescriptionID,
+	Description,
+	rowguid,
+	ModifiedDate
+	FROM SalesLT.ProductDescription
+	ORDER BY Description COLLATE SQL_Latin1_General_CP1_CI_AS ASC OFFSET 0 ROWS ;
+
+
+Top 10 Sales Order Detail Records - from the top of the list: 
+
+CREATE VIEW [dbo].[Amaya_vTop10Sales]
+	AS SELECT TOP 10
+	SalesOrderID,
+	SalesOrderDetailID,
+	OrderQty,
+	ProductID,
+	UnitPrice,
+	UnitPriceDiscount,
+	LineTotal,
+	rowguid,
+	ModifiedDate
+	FROM SalesLT.SalesOrderDetail
+
+
+Top 10 Sales Order Details - based on the Sum of UnitPrice:
+
+CREATE VIEW [dbo].[Amaya_vTop10Sale]
+	AS SELECT TOP 10
+	SalesOrderID,
+	SalesOrderDetailID,
+	OrderQty,
+	ProductID,
+	UnitPrice,
+	UnitPriceDiscount,
+	LineTotal,
+	rowguid,
+	ModifiedDate, Sum(UnitPrice) AS SumPrice
+	FROM SalesLT.SalesOrderDetail
+	Group By SalesOrderDetailID, SalesOrderId, OrderQty,ProductID, UnitPrice, UnitPriceDiscount, LineTotal,
+	rowguid,
+	ModifiedDate
+	Order BY SumPrice DESC;
+
+User Defined Function: 
+
+CREATE FUNCTION cusInfo()
+	RETURNS TABLE
+	AS RETURN
+	SELECT
+	CustomerID, 
+	FirstName,
+	LastName,
+	Phone,
+	AddressID,
+	AddressLine1,
+	City,
+	StateProvince,
+	CountryRegion,
+	PostalCode
+	FROM SalesLT.Customer
+	INNER JOIN SalesLT.Address 
+	ON SalesLT.Customer.CustomerID = SalesLT.Address.AddressID;
+
+View for User Defined Function: 
+
+CREATE VIEW [dbo].[Amaya_ufnCustomerDemographics]
+	AS SELECT * FROM cusInfo();

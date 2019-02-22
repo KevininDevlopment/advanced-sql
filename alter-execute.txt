@@ -1,0 +1,53 @@
+ALTER USER DEFINED FUNCTION TO RETURN MORE DEMOGRAPHIC DATA
+------------------------------------------------------------------------------------------------------------------------
+ALTER FUNCTION cusInfo()
+	RETURNS TABLE
+	AS RETURN
+	SELECT TOP 10 
+	SalesLT.Customer.CustomerID, 
+	Title,
+	FirstName,
+	LastName,
+	Phone,
+	EmailAddress,
+	CompanyName,
+	SalesLt.Address.AddressID,
+	AddressLine1,
+	City,
+	StateProvince,
+	CountryRegion,
+	PostalCode,
+	AddressType,
+	SalesPerson
+	FROM SalesLT.Customer
+    INNER JOIN SalesLT.Address 
+
+Not able to change function as all information in relational databases has already been queried in this current function.
+-------------------------------------------------------------------------------------------------------------------------
+EXECUTE EXISTING TRIGGER TO ADD 10 NEW SALES
+-------------------------------------------------------------------------------------------------------------------------
+INSERT INTO SalesLT.NEWSalesOrderDetail (SalesOrderID, OrderQty, ProductID, UnitPrice, UnitPriceDiscount,
+	rowguid, ModifiedDate)
+	VALUES (71780, 11, 905, 1230.0006, 9.8856, NEWID(), GETDATE()),
+	(71780, 8, 983, 800.2233, 6.3646,  NEWID(), GETDATE()),
+	(71780, 11, 907, 983.4233, 17.7600,  NEWID(), GETDATE()),
+	(71780, 10, 988, 1100.2312, 12.4560,  NEWID(), GETDATE()),
+	(71780, 9, 748, 985.3453, 7.4377,  NEWID(), GETDATE()),
+	(71780, 2, 990, 349.3422, 10.9000,  NEWID(), GETDATE()),
+	(71780, 4, 926, 678.3211, 10.2300,  NEWID(), GETDATE()),
+	(71780, 5, 743, 870.3766, 8.5430,  NEWID(), GETDATE()),
+	(71780, 1, 782, 67.0044, 3.0990,  NEWID(), GETDATE()),
+	(71780, 4, 918, 584.1200, 5.8900,  NEWID(), GETDATE());
+-------------------------------------------------------------------------------------------------------------------------
+EXECUTE SALES ORDER DETAIL TOP 10 PROCEDURE
+-------------------------------------------------------------------------------------------------------------------------
+EXEC proc_Topten;
+-------------------------------------------------------------------------------------------------------------------------
+EXECUTE SALES PERSON TOP 10 PROCEDURE
+-------------------------------------------------------------------------------------------------------------------------
+EXEC proc_SalesPersonTopTen;
+-------------------------------------------------------------------------------------------------------------------------
+EXECUTE PROCEDURE TO GET TOP RECORDS FROM THE STORE TABLE
+-------------------------------------------------------------------------------------------------------------------------
+EXEC proc_StoreTopFive;
+-------------------------------------------------------------------------------------------------------------------------

@@ -1,0 +1,284 @@
+HTML WEBSITE
+-------------------------------------------------------------------------------------------------------------------
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Data</title>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body style="background-color: whitesmoke";>
+
+<header>
+
+    <div id="information" >
+        <h1 id="Instructions" style="color: indigo;" align='center'>Introduce Yourself</h1>
+        <h4 id="para1" style="" align='center'>Welcome to the official website for retrieving customer information.
+        As You will see below, the information for the last 10 customers is listed. In order to extend
+        our customer service experience, it is vital that new customers are treated with the greatest of care.
+        To better achieve this, we ask that all new customers are contacted within the first week of being added.
+        A simple phone call or email message can allow us to better understand our customers, so please
+        reach out!</h4>
+    </div>
+</header>
+
+<?php
+
+/* Variable credentials */
+$serverName = "servforrasmussen.database.windows.net";
+$uid = "servadmin30";
+$pwd = "D?9,vywkQSUH)5]p";
+$databaseName = "Amaya_db";
+
+/* Store credentials in one variable */
+$connectionInfo = array( "UID"=> $uid,
+    "PWD"=> $pwd,
+    "Database" => $databaseName);
+
+/* Connect using SQL Server Authentication. */
+$conn = sqlsrv_connect( $serverName, $connectionInfo);
+
+$tsql = "SELECT TOP 10 FirstName, LastName, Phone, EmailAddress, SalesPerson FROM SalesLT.Customer";
+
+$stmt = sqlsrv_query( $conn, $tsql);
+
+if ( $stmt )
+{
+    echo "<p align='center'><b>"."Here is the list of customers and their information."."</b></p>";
+}
+else
+{
+    echo "There was an error.\n";
+    die( print_r( sqlsrv_errors(), true));
+}
+/* Iterate and show results of query in table format */
+for($num = 1; $num < 11; $num++) {
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_NUMERIC)) {
+        echo "<table align='center' border=3>";
+        echo "<thead>";
+        echo "<th>" . "Employee" . " " . $num++ . "</th>";
+        echo "</thead>";
+        echo "<tr>";
+        echo "<td>" . "First: " . $row[0] . "</td>\n";
+        echo "</tr>";
+        echo "<tr>";
+        echo "<td>" . "Last: " . $row[1] . "</td>\n";
+        echo "</tr>";
+        echo "<td>" . "Phone: " . $row[2] . "</td>\n";
+        echo "<tr>";
+        echo "<td>" . "Email: " . $row[3] . "</td><br>\n";
+        echo "</tr>";
+        echo "<tr>";
+        echo "<td>" . "Representative: " . $row[4] . "</td><br>\n";
+        echo "</tr>";
+        echo "</table>";
+    }
+}
+/* Free statement and connection resources. */
+sqlsrv_free_stmt( $stmt);
+sqlsrv_close( $conn);
+
+?>
+
+<footer>
+    <p id="copy" align='center' style="color: indigo"><b>&copy; 2018 AdventureWorksCycle.com</b></p>
+</footer>
+
+</body>
+</html>
+--------------------------------------------------------------------------------------------------------------
+Amaya_vProductLinesUSA QUERY
+--------------------------------------------------------------------------------------------------------------
+SELECT * FROM [dbo].[Amaya_vProductLinesUSA]
+WHERE ProductDescriptionID < 1300;
+--------------------------------------------------------------------------------------------------------------
+ALTER USER DEFINED FUNCTION cusInfo()
+--------------------------------------------------------------------------------------------------------------
+ALTER FUNCTION cusInfo()
+	RETURNS TABLE
+	AS RETURN
+	SELECT
+	CustomerID, 
+	Title,
+	FirstName,
+	LastName,
+	Phone,
+	EmailAddress,
+	CompanyName,
+	AddressID,
+	AddressLine1,
+	City,
+	StateProvince,
+	CountryRegion,
+	PostalCode,
+	SalesPerson
+	FROM SalesLT.Customer
+	INNER JOIN SalesLT.Address 
+	ON SalesLT.Customer.CustomerID = SalesLT.Address.AddressID;
+-----------------------------------------------------------------------------------------------------------------
+SALES PERSON TABLE
+-----------------------------------------------------------------------------------------------------------------
+CREATE TABLE [SalesLT].[SalesPerson](
+	[SalesPersonID] INT NOT NULL,
+	[TerritoryID] INT NULL,
+	[SalesQuota] MONEY NULL,
+	[Bonus] MONEY NOT NULL,
+	[CommissionPct] SMALLMONEY NOT NULL,
+	[SalesYTD] MONEY NOT NULL,
+	[SalesLastYear] MONEY NOT NULL,
+	[rowguid] UNIQUEIDENTIFIER ROWGUIDCOL  NOT NULL,
+	[ModifiedDate] DATETIME NOT NULL,
+ CONSTRAINT [PK_SalesPerson_SalesPersonID] PRIMARY KEY CLUSTERED ([SalesPersonID] ASC)
+ );
+
+INSERT INTO SalesLT.SalesPerson (SalesPersonID, TerritoryID, SalesQuota, Bonus, CommissionPct, SalesYTD,
+ SalesLastYear, rowguid, ModifiedDate)
+ VALUES (1, 1, 1000.0000, 200, 500, 4000.5360, 3800.0000, NEWID(), GETDATE()),
+		(2, 2, 1500.0000, 400, 700, 3800.7760, 2000.0000, NEWID(), GETDATE()),
+		(3, 3, 3000.0000, 600, 400, 7685.8756, 10560.8300, NEWID(), GETDATE()),
+		(4, 4, 7098.0000, 787, 300, 5780.9960, 5000.0000, NEWID(), GETDATE()),
+		(5, 5, 4000.0000, 500, 800, 6700.3080, 6000.0000, NEWID(), GETDATE()),
+		(6, 6, 4000.0000, 400, 900, 8900.4460, 6500.0000, NEWID(), GETDATE()),
+		(7, 7, 5000.0000, 600, 400, 6800.2000, 3000.0000, NEWID(), GETDATE()),
+		(8, 8, 3500.0000, 100, 700, 7800.5360, 3000.0000, NEWID(), GETDATE()),
+		(9, 9, 2500.6700, 400, 450, 5500.7760, 4000.0000, NEWID(), GETDATE()),
+		(10, 10, 4000.0000, 500, 600, 8000.5360, 9000.0000, NEWID(), GETDATE()
+		);
+
+-----------------------------------------------------------------------------------------------------------------
+TOP 10 SALES PERSON PROCEDURE
+-----------------------------------------------------------------------------------------------------------------
+ALTER PROCEDURE [proc_SalesPersonTopTen]
+AS
+    SELECT TOP 10 *
+	FROM SalesLT.SalesPerson;
+-----------------------------------------------------------------------------------------------------------------
+SALES STORE PROCEDURE
+-----------------------------------------------------------------------------------------------------------------
+CREATE TABLE [SalesLT].[Store](
+	[CustomerID] INT NOT NULL,
+	[Name] [dbo].[Name] NOT NULL,
+	[SalesPersonID] INT NULL,
+	[rowguid] UNIQUEIDENTIFIER ROWGUIDCOL  NOT NULL,
+	[ModifiedDate] DATETIME NOT NULL,
+ CONSTRAINT [PK_Store_CustomerID] PRIMARY KEY CLUSTERED ([CustomerID] ASC),
+ );
+
+INSERT INTO SalesLT.Store(CustomerID, Name, SalesPersonID, rowguid, ModifiedDate)
+ VALUES (2, 'Bill', 3, NEWID(), GETDATE()),
+		(3, 'Tom', 4, NEWID(), GETDATE()),
+		(4, 'Joe', 5, NEWID(), GETDATE()),
+		(5, 'Orenthio', 6, NEWID(), GETDATE()),
+		(6, 'Kevin', 7, NEWID(), GETDATE()
+		);
+
+CREATE PROCEDURE [proc_StoreTopFive]
+AS
+    SELECT TOP 5 *
+	FROM SalesLT.SalesPerson;
+
+-----------------------------------------------------------------------------------------------------------------
+INSERT 5 PRODUCTS INTO PRODUCTS TABLE
+-----------------------------------------------------------------------------------------------------------------
+INSERT INTO [dbo].[NEWTableHere] ( Name, ProductNumber, Color,
+	StandardCost, ListPrice, Size, Weight, ProductCategoryID, ProductModelID, SellStartDate, SellEndDate, DiscontinuedDate,
+	ThumbnailPhoto, ThumbNailPhotoFileName, rowguid, ModifiedDate)
+	VALUES ('RD-640 Green, 650', 'RD-D67963-72', 'Green', 700.4005, 740.6986, 72, 880.321, 14, 90, CURRENT_TIMESTAMP, 
+	NULL, NULL, NULL, NULL, NEWID(), GETDATE()),
+	('Cycle-200 Blue, 220', 'CY-C90893-78', 'Blue', 680.5085, 700.0056, 78, 700.609, 11, 44, CURRENT_TIMESTAMP, 
+	NULL, NULL, NULL, NULL, NEWID(), GETDATE()),
+	('RD-550 Purple, 650', 'RD-D04593-70', 'Purple', 840.9085, 900.9856, 70, 550.908, 12, 48, CURRENT_TIMESTAMP, 
+	NULL, NULL, NULL, NULL, NEWID(), GETDATE()),
+	('Bike-300 Orange, 320', 'CL-C89893-30', 'Orange', 440.9085, 600.9856, 30, 720.501, 13, 54, CURRENT_TIMESTAMP, 
+	NULL, NULL, NULL, NULL, NEWID(), GETDATE());
+---------------------------------------------------------------------------------------------------------------------
+10 NEW SALES INTO SALES ORDER DETAILS TABLE
+---------------------------------------------------------------------------------------------------------------------
+INSERT INTO SalesLT.NEWSalesOrderDetail (SalesOrderID, OrderQty, ProductID, UnitPrice, UnitPriceDiscount,
+	rowguid, ModifiedDate)
+	VALUES (71784, 10, 800, 607.4606, 3.2856, NEWID(), GETDATE()),
+	(71784, 6, 801, 800.4606, 6.6556,  NEWID(), GETDATE()),
+	(71784, 3, 802, 750.4606, 9.0056,  NEWID(), GETDATE()),
+	(71784, 4, 803, 300.4606, 2.2870,  NEWID(), GETDATE()),
+	(71784, 4, 804, 200.4606, 1.2126,  NEWID(), GETDATE()),
+	(71784, 7, 805, 1070.4606, 7.3656,  NEWID(), GETDATE()),
+	(71784, 2, 806, 890.4606, 8.4346,  NEWID(), GETDATE()),
+	(71784, 8, 807, 245.4606, 5.3336,  NEWID(), GETDATE()),
+	(71784, 6, 808, 200.4606, 4.4432,  NEWID(), GETDATE()),
+	(71784, 5, 809, 150.4606, 3.2376,  NEWID(), GETDATE());
+-----------------------------------------------------------------------------------------------------------------------
+TRIGGER FOR SPECIALOFFER TABLE
+-----------------------------------------------------------------------------------------------------------------------
+CREATE TABLE [SalesLT].[SpecialOffer](
+	[SpecialOfferID] INT IDENTITY(1,1) NOT NULL,
+	[Description] NVARCHAR (255) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[DiscountPct] SMALLMONEY NOT NULL,
+	[Type] NVARCHAR (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[Category] NVARCHAR (50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
+	[StartDate] DATETIME NOT NULL,
+	[EndDate] DATETIME NOT NULL,
+	[MinQty] INT NOT NULL,
+	[MaxQty] INT NULL,
+	[rowguid] UNIQUEIDENTIFIER ROWGUIDCOL  NOT NULL,
+	[ModifiedDate] DATETIME NOT NULL,
+ CONSTRAINT [PK_SpecialOffer_SpecialOfferID] PRIMARY KEY CLUSTERED ([SpecialOfferID] ASC)
+ );
+---------------------------------------------------------------------------------------------------------------------
+CREATE TABLE [SalesLT].[NEWSpecialOffer] (
+ [SpecialOfferID] INT              IDENTITY (1, 1) NOT NULL,
+    [Description]    NVARCHAR (255)   NOT NULL,
+    [DiscountPct]    SMALLMONEY       NOT NULL,
+    [Type]           NVARCHAR (50)    NOT NULL,
+    [Category]       NVARCHAR (50)    NOT NULL,
+    [StartDate]      DATETIME         NOT NULL,
+    [EndDate]        DATETIME         NOT NULL,
+    [MinQty]         INT              NOT NULL,
+    [MaxQty]         INT              NULL,
+    [rowguid]        UNIQUEIDENTIFIER ROWGUIDCOL NOT NULL,
+    [ModifiedDate]   DATETIME         NOT NULL,
+    CONSTRAINT [PK_NEWSpecialOffer_SpecialOfferID] PRIMARY KEY CLUSTERED ([SpecialOfferID] ASC)
+);
+----------------------------------------------------------------------------------------------------------------------
+CREATE TRIGGER newSpecialOfferTrig
+ON SalesLT.NEWSpecialOffer
+AFTER INSERT 
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	DECLARE @Description NVARCHAR (255) 
+	DECLARE @DiscountPct SMALLMONEY
+	DECLARE @Type NVARCHAR (50)
+	DECLARE @Category NVARCHAR (50)
+	DECLARE @StartDate DATETIME
+	DECLARE @EndDate DATETIME
+	DECLARE @MinQty INT
+	DECLARE @MaxQty INT
+	DECLARE @rowguid UNIQUEIDENTIFIER
+	DECLARE @ModifiedDate DATETIME
+	
+	SELECT  @Description = Description FROM inserted
+	SELECT  @DiscountPct = DiscountPct FROM inserted
+	SELECT  @Type = Type FROM inserted
+	SELECT  @Category = Category FROM inserted
+	SELECT  @StartDate = StartDate FROM inserted
+	SELECT  @EndDate = EndDate FROM inserted
+	SELECT  @MinQty = MinQty FROM inserted
+	SELECT  @MaxQty = MaxQty FROM inserted
+	SELECT  @rowguid = rowguid FROM inserted
+	SELECT  @ModifiedDate = ModifiedDate FROM inserted	
+	
+	INSERT INTO SalesLT.SpecialOffer (Description, DiscountPct, Type, Category, StartDate,
+	EndDate, MinQty, MaxQty, rowguid, ModifiedDate)
+	VALUES ( @Description, @DiscountPct, @Type, @Category, @StartDate,
+	@EndDate, @MinQty, @MaxQty, @rowguid, @ModifiedDate);	
+	
+	 PRINT '**********SPECIAL OFFER SUCCESS***************'
+END;
+
+INSERT INTO SalesLT.NEWSpecialOffer (Description, DiscountPct, Type, Category, StartDate,
+	EndDate, MinQty, MaxQty, rowguid, ModifiedDate)
+	VALUES ( 'five percent off', 5.00, 'seasonal', 'standardoffer', GETDATE(),
+	'2018-10-25', 6, 20, NEWID(), GETDATE());
+----------------------------------------------------------------------------------------------------------------------

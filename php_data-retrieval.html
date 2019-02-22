@@ -1,0 +1,87 @@
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Data</title>
+    <link rel="stylesheet" href="styles.css">
+
+</head>
+
+<body style="background-color: whitesmoke";>
+
+<header>
+
+    <div id="information" >
+        <h1 id="Instructions" style="color: indigo;" align='center'>Introduce Yourself</h1>
+        <h4 id="para1" style="" align='center'>Welcome to the official website for retrieving customer information.
+        As You will see below, the information for the last 10 customers is listed. In order to extend
+        our customer service experience, it is vital that new customers are treated with the greatest of care.
+        To better achieve this, we ask that all new customers are contacted within the first week of being added.
+        A simple phone call or email message can allow us to better understand our customers, so please
+        reach out!</h4>
+    </div>
+</header>
+
+<?php
+
+/* Variable credentials */
+$serverName = "servforrasmussen.database.windows.net";
+$uid = "servadmin30";
+$pwd = "D?9,vywkQSUH)5]p";
+$databaseName = "Amaya_db";
+
+/* Store credentials in one variable */
+$connectionInfo = array( "UID"=> $uid,
+    "PWD"=> $pwd,
+    "Database" => $databaseName);
+
+/* Connect using SQL Server Authentication. */
+$conn = sqlsrv_connect( $serverName, $connectionInfo);
+
+$tsql = "SELECT TOP 10 FirstName, LastName, Phone, EmailAddress, SalesPerson FROM SalesLT.Customer";
+
+$stmt = sqlsrv_query( $conn, $tsql);
+
+if ( $stmt )
+{
+    echo "<p align='center'><b>"."Here is the list of customers and their information."."</b></p>";
+}
+else
+{
+    echo "There was an error.\n";
+    die( print_r( sqlsrv_errors(), true));
+}
+/* Iterate and show results of query in table format */
+for($num = 1; $num < 11; $num++) {
+    while ($row = sqlsrv_fetch_array($stmt, SQLSRV_FETCH_NUMERIC)) {
+        echo "<table align='center' border=3>";
+        echo "<thead>";
+        echo "<th>" . "Employee" . " " . $num++ . "</th>";
+        echo "</thead>";
+        echo "<tr>";
+        echo "<td>" . "First: " . $row[0] . "</td>\n";
+        echo "</tr>";
+        echo "<tr>";
+        echo "<td>" . "Last: " . $row[1] . "</td>\n";
+        echo "</tr>";
+        echo "<td>" . "Phone: " . $row[2] . "</td>\n";
+        echo "<tr>";
+        echo "<td>" . "Email: " . $row[3] . "</td><br>\n";
+        echo "</tr>";
+        echo "<tr>";
+        echo "<td>" . "Representative: " . $row[4] . "</td><br>\n";
+        echo "</tr>";
+        echo "</table>";
+    }
+}
+/* Free statement and connection resources. */
+sqlsrv_free_stmt( $stmt);
+sqlsrv_close( $conn);
+
+?>
+
+<footer>
+    <p id="copy" align='center' style="color: indigo"><b>&copy; 2018 AdventureWorksCycle.com</b></p>
+</footer>
+
+</body>
+</html>

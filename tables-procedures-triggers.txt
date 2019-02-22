@@ -1,0 +1,157 @@
+TABLE
+-----------------------------------------------------------------------------------------------------------------------
+CREATE TABLE NewTableHERE
+(
+    [ProductID]              INT              IDENTITY (1, 1) NOT NULL,
+    [Name]                   [dbo].[Name]     NOT NULL,
+    [ProductNumber]          NVARCHAR (25)    NOT NULL,
+    [Color]                  NVARCHAR (15)    NULL,
+    [StandardCost]           MONEY            NOT NULL,
+    [ListPrice]              MONEY            NOT NULL,
+    [Size]                   NVARCHAR (5)     NULL,
+    [Weight]                 DECIMAL (8, 2)   NULL,
+    [ProductCategoryID]      INT              NULL,
+    [ProductModelID]         INT              NULL,
+    [SellStartDate]          DATETIME         NOT NULL,
+    [SellEndDate]            DATETIME         NULL,
+    [DiscontinuedDate]       DATETIME         NULL,
+    [ThumbNailPhoto]         VARBINARY (MAX)  NULL,
+    [ThumbnailPhotoFileName] NVARCHAR (50)    NULL,
+    [rowguid]                UNIQUEIDENTIFIER CONSTRAINT [Product_rowguid] DEFAULT (newid()) NOT NULL,
+    [ModifiedDate]           DATETIME         CONSTRAINT [Product_ModifiedDate] DEFAULT (getdate()) NOT NULL,
+   
+);
+----------------------------------------------------------------------------------------------------------------------
+CREATE TABLE [SalesLT].[NEWSalesOrderDetail] (
+    [SalesOrderID]       INT              NOT NULL,
+    [SalesOrderDetailID] INT              IDENTITY (1, 1) NOT NULL,
+    [OrderQty]           SMALLINT         NOT NULL,
+    [ProductID]          INT              NOT NULL,
+    [UnitPrice]          MONEY            NOT NULL,
+    [UnitPriceDiscount]  MONEY            CONSTRAINT [DF_NEWSalesOrderDetail_UnitPriceDiscount] DEFAULT ((0.0)) NOT NULL,
+    [LineTotal]          AS               (isnull(([UnitPrice]*((1.0)-[UnitPriceDiscount]))*[OrderQty],(0.0))),
+    [rowguid]            UNIQUEIDENTIFIER CONSTRAINT [DF_NEWSalesOrderDetail_rowguid] DEFAULT (newid()) NOT NULL,
+    [ModifiedDate]       DATETIME         CONSTRAINT [DF_NEWSalesOrderDetail_ModifiedDate] DEFAULT (getdate()) NOT NULL,
+    CONSTRAINT [PK_NEWSalesOrderDetail_SalesOrderID_SalesOrderDetailID] PRIMARY KEY CLUSTERED ([SalesOrderID] ASC, [SalesOrderDetailID] ASC),
+    CONSTRAINT [AK_NEWSalesOrderDetail_rowguid] UNIQUE NONCLUSTERED ([rowguid] ASC),
+    CONSTRAINT [FK_NEWSalesOrderDetail_Product_ProductID] FOREIGN KEY ([ProductID]) REFERENCES [SalesLT].[Product] ([ProductID]),
+    CONSTRAINT [FK_NEWSalesOrderDetail_SalesOrderHeader_SalesOrderID] FOREIGN KEY ([SalesOrderID]) REFERENCES [SalesLT].[SalesOrderHeader] ([SalesOrderID]) ON DELETE CASCADE,
+    CONSTRAINT [CK_NEWSalesOrderDetail_OrderQty] CHECK ([OrderQty]>(0)),
+    CONSTRAINT [CK_NEWSalesOrderDetail_UnitPrice] CHECK ([UnitPrice]>=(0.00)),
+    CONSTRAINT [CK_NEWSalesOrderDetail_UnitPriceDiscount] CHECK ([UnitPriceDiscount]>=(0.00))
+);
+
+
+GO
+CREATE NONCLUSTERED INDEX [IX_NEWSalesOrderDetail_ProductID]
+    ON [SalesLT].[NEWSalesOrderDetail]([ProductID] ASC);
+----------------------------------------------------------------------------------------------------------------------
+TRIGGERS
+----------------------------------------------------------------------------------------------------------------------
+CREATE TRIGGER newProduct
+ON [dbo].[NewTableHERE]
+AFTER INSERT
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	DECLARE @Name NVARCHAR (50)
+	DECLARE @ProductNumber NVARCHAR (25)
+	DECLARE @Color NVARCHAR (15)
+	DECLARE @StandardCost MONEY
+	DECLARE @ListPrice MONEY
+	DECLARE @Size NVARCHAR (5)
+	DECLARE @Weight DECIMAL (8, 2)
+	DECLARE @ProductCategoryID INT
+	DECLARE @ProductModelID INT
+	DECLARE @SellStartDate DATETIME
+	DECLARE @SellEndDate DATETIME
+	DECLARE @DiscontinuedDate DATETIME
+	DECLARE @ThumbNailPhoto VARBINARY (MAX)
+	DECLARE @ThumbNailPhotoFileName NVARCHAR (50)
+	DECLARE @rowguid UNIQUEIDENTIFIER
+	DECLARE @ModifiedDate DATETIME
+	
+	
+	SELECT  @Name = Name FROM inserted
+	SELECT  @ProductNumber = ProductNumber FROM inserted
+	SELECT  @Color = Color FROM inserted
+	SELECT  @StandardCost = StandardCost FROM inserted
+	SELECT  @ListPrice = ListPrice FROM inserted
+	SELECT  @Size = Size FROM inserted
+	SELECT  @Weight = Weight FROM inserted
+	SELECT  @ProductCategoryID = ProductCategoryID FROM inserted
+	SELECT  @ProductModelID = ProductModelID FROM inserted
+	SELECT  @SellStartDate = SellStartDate FROM inserted
+	SELECT  @SellEndDate = SellEndDate FROM inserted
+	SELECT  @DiscontinuedDate = DiscontinuedDate FROM inserted
+	SELECT  @ThumbNailPhoto = ThumbNailPhoto FROM inserted
+	SELECT  @ThumbNailPhotoFileName = ThumbNailPhotoFileName FROM inserted
+	SELECT  @rowguid = rowguid FROM inserted
+	SELECT  @ModifiedDate = ModifiedDate FROM inserted
+	 
+
+	INSERT INTO SalesLT.Product ( Name, ProductNumber, Color,
+	StandardCost, ListPrice, Size, Weight, ProductCategoryID, ProductModelID, SellStartDate, SellEndDate, DiscontinuedDate,
+	ThumbnailPhoto, ThumbNailPhotoFileName, rowguid, ModifiedDate)
+	VALUES ( @Name, @ProductNumber, @Color, @StandardCost, @ListPrice, @Size, @Weight, @ProductCategoryID, 
+	@ProductModelID, @SellStartDate, @SellEndDate, @DiscontinuedDate, @ThumbNailPhoto, @ThumbNailPhotoFileName, 
+	@rowguid, @ModifiedDate);
+
+
+	PRINT '**********SUCCESS***************'
+END;
+-----------------------------------------------------------------------------------------------------------------------	
+
+CREATE TRIGGER newSales
+ON SalesLT.NEWSalesOrderDetail
+AFTER INSERT 
+AS
+BEGIN
+	SET NOCOUNT ON
+
+	DECLARE @SalesOrderID INT 
+	DECLARE @OrderQty SMALLINT
+	DECLARE @ProductID INT
+	DECLARE @UnitPrice MONEY
+	DECLARE @UnitPriceDiscount MONEY
+	DECLARE @rowguid UNIQUEIDENTIFIER
+	DECLARE @ModifiedDate DATETIME
+	
+	SELECT  @SalesOrderID = SalesOrderID FROM inserted
+	SELECT  @OrderQty = OrderQty FROM inserted
+	SELECT  @ProductID = ProductID FROM inserted
+	SELECT  @UnitPrice = UnitPrice FROM inserted
+	SELECT  @UnitPriceDiscount = UnitPriceDiscount FROM inserted
+	SELECT  @rowguid = rowguid FROM inserted
+	SELECT  @ModifiedDate = ModifiedDate FROM inserted	
+	
+	INSERT INTO SalesLT.SalesOrderDetail (SalesOrderID, OrderQty, ProductID, UnitPrice, UnitPriceDiscount,
+	rowguid, ModifiedDate)
+	VALUES ( @SalesOrderID, @OrderQty, @ProductID, @UnitPrice, @UnitPriceDiscount,
+	@rowguid, @ModifiedDate);	
+	
+	 PRINT '**********SALES SUCCESS***************'
+END;
+----------------------------------------------------------------------------------------------------------------------
+PROCEDURES
+----------------------------------------------------------------------------------------------------------------------
+CREATE PROCEDURE [proc_Topten]
+AS
+    SELECT TOP 10
+	SalesOrderID,
+	SalesOrderDetailID,
+	OrderQty,
+	ProductID,
+	UnitPrice,
+	UnitPriceDiscount,
+	LineTotal,
+	rowguid,
+	ModifiedDate
+	FROM SalesLT.SalesOrderDetail
+
+----------------------------------------------------------------------------------------------------------------------
+CREATE PROCEDURE [proc_SalesDate]
+AS
+    ALTER TABLE SalesLT.SalesOrderDetail
+	ADD SalesDate Date;
